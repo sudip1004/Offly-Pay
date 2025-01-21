@@ -4,113 +4,185 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OfflyPay - Offline Payment System</title>
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: url('https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=2029&auto=format&fit=crop') center/cover fixed;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-['Inter']">
-    <div id="app">
-        <!-- Auth Container -->
-        <div id="authContainer" class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-                <h1 class="text-2xl font-bold text-center mb-6">Welcome to OfflyPay</h1>
-                <div class="flex gap-4 mb-6">
-                    <button onclick="showLogin()" class="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg">Login</button>
-                    <button onclick="showRegister()" class="flex-1 py-2 px-4 bg-gray-200 rounded-lg">Register</button>
-                </div>
-                
-                <!-- Login Form -->
-                <form id="loginForm" class="space-y-4">
-                    <div>
-                        <input type="tel" placeholder="Enter Mobile Number" class="w-full p-3 border rounded-lg" required>
-                    </div>
-                    <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-lg">Login</button>
-                </form>
+<body class="min-h-screen bg-gray-100">
+    <!-- Auth Container -->
+    <div id="authContainer" class="container mx-auto px-4 py-8">
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-blue-600">Welcome to OfflyPay</h1>
+                <p class="text-gray-600">Secure Offline Payment System</p>
+            </div>
+            
+            <div class="flex justify-center space-x-4 mb-6">
+                <button onclick="showLogin()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">Login</button>
+                <button onclick="showRegister()" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600">Register</button>
+            </div>
 
-                <!-- Register Form -->
-                <form id="registerForm" class="space-y-4 hidden">
-                    <div>
-                        <input type="text" placeholder="Bank IFSC Code (First 4 letters)" class="w-full p-3 border rounded-lg" required>
+            <!-- Login Form -->
+            <form id="loginForm" class="hidden space-y-4">
+                <div>
+                    <input type="text" id="loginPhone" placeholder="Phone Number" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <input type="text" id="loginAccount" placeholder="Account Number" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <input type="text" id="loginIFSC" placeholder="IFSC Code" class="w-full p-2 border rounded" required>
+                </div>
+                <button type="button" onclick="handleLogin()" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Login</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="hidden space-y-4">
+                <div>
+                    <input type="text" id="regName" placeholder="Full Name" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <input type="text" id="regPhone" placeholder="Phone Number" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <input type="text" id="regAccount" placeholder="Account Number" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <input type="text" id="regIFSC" placeholder="IFSC Code" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <input type="password" id="regPin" placeholder="Set UPI PIN" class="w-full p-2 border rounded" required>
+                </div>
+                <button type="button" onclick="handleRegister()" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div id="dashboardContainer" class="hidden container mx-auto px-4 py-8">
+        <!-- Profile Section -->
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold text-white">Dashboard</h2>
+            <div class="relative">
+                <button onclick="toggleProfile()" class="flex items-center space-x-2 bg-white rounded-lg px-4 py-2">
+                    <i class="bi bi-person-circle text-2xl"></i>
+                    <span id="userName">User</span>
+                </button>
+                <div id="profileMenu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl p-4">
+                    <h3 class="text-lg font-semibold mb-2" id="profileName">Welcome, User</h3>
+                    <div class="space-y-2">
+                        <button onclick="showBankAccounts()" class="w-full text-left px-4 py-2 hover:bg-gray-100 rounded">Bank Accounts</button>
+                        <button onclick="showCheckBalance()" class="w-full text-left px-4 py-2 hover:bg-gray-100 rounded">Check Balance</button>
+                        <button onclick="showResetPin()" class="w-full text-left px-4 py-2 hover:bg-gray-100 rounded">Reset PIN</button>
+                        <button onclick="handleLogout()" class="w-full text-left px-4 py-2 hover:bg-gray-100 rounded text-red-500">Logout</button>
                     </div>
-                    <div>
-                        <input type="tel" placeholder="Mobile Number" class="w-full p-3 border rounded-lg" required>
-                    </div>
-                    <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-lg">Register</button>
-                </form>
+                </div>
             </div>
         </div>
 
-        <!-- Dashboard Container -->
-        <div id="dashboardContainer" class="hidden min-h-screen bg-gray-100">
-            <!-- Header -->
-            <header class="bg-white shadow-sm">
-                <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <h1 class="text-xl font-bold">OfflyPay</h1>
-                    <div class="relative">
-                        <button onclick="toggleProfile()" class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            <i class="bi bi-person-circle text-xl"></i>
-                        </button>
-                        <!-- Profile Dropdown -->
-                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg p-4">
-                            <div class="mb-4">
-                                <p class="text-lg font-semibold">Welcome, User</p>
-                            </div>
-                            <div class="space-y-2">
-                                <button onclick="showBankAccounts()" class="w-full text-left px-4 py-2 hover:bg-gray-100 rounded">Bank Accounts</button>
-                                <button onclick="showCheckBalance('profile')" class="w-full text-left px-4 py-2 hover:bg-gray-100 rounded">Check Balance</button>
-                                <button onclick="showResetPin()" class="w-full text-left px-4 py-2 hover:bg-gray-100 rounded">Reset PIN</button>
-                                <button onclick="logout()" class="w-full text-left px-4 py-2 hover:bg-gray-100 rounded text-red-600">Logout</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <button onclick="showSendMoney()" class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600">
+                <i class="bi bi-send text-2xl mb-2"></i>
+                <p>Send Money</p>
+            </button>
+            <button onclick="showRequestMoney()" class="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600">
+                <i class="bi bi-currency-exchange text-2xl mb-2"></i>
+                <p>Request Money</p>
+            </button>
+            <button onclick="showCheckBalance()" class="bg-yellow-500 text-white p-4 rounded-lg hover:bg-yellow-600">
+                <i class="bi bi-wallet2 text-2xl mb-2"></i>
+                <p>Check Balance</p>
+            </button>
+            <button onclick="showHistory()" class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600">
+                <i class="bi bi-clock-history text-2xl mb-2"></i>
+                <p>History</p>
+            </button>
+        </div>
+    </div>
 
-            <!-- Main Content -->
-            <main class="max-w-7xl mx-auto px-4 py-8">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <button onclick="showSendMoney()" class="p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition">
-                        <i class="bi bi-send text-2xl mb-2 text-blue-600"></i>
-                        <p>Send Money</p>
-                    </button>
-                    <button onclick="showRequestMoney()" class="p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition">
-                        <i class="bi bi-currency-exchange text-2xl mb-2 text-green-600"></i>
-                        <p>Request Money</p>
-                    </button>
-                    <button onclick="showCheckBalance('dashboard')" class="p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition">
-                        <i class="bi bi-wallet2 text-2xl mb-2 text-purple-600"></i>
-                        <p>Check Balance</p>
-                    </button>
-                    <button onclick="showHistory()" class="p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition">
-                        <i class="bi bi-clock-history text-2xl mb-2 text-gray-600"></i>
-                        <p>History</p>
-                    </button>
-                </div>
+    <!-- Modals -->
+    <div class="overlay" id="overlay"></div>
 
-                <!-- Modal Container -->
-                <div id="modalContainer" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                    <div class="bg-white rounded-lg max-w-md w-full p-6">
-                        <div id="modalContent"></div>
-                    </div>
-                </div>
-            </main>
+    <!-- Send Money Modal -->
+    <div id="sendMoneyModal" class="modal bg-white rounded-lg p-6 w-96">
+        <h3 class="text-xl font-bold mb-4">Send Money</h3>
+        <form id="sendMoneyForm" class="space-y-4">
+            <select id="sendType" class="w-full p-2 border rounded">
+                <option value="upi">UPI ID</option>
+                <option value="mobile">Mobile Number</option>
+                <option value="account">Account & IFSC</option>
+            </select>
+            <input type="text" id="recipientId" placeholder="Recipient ID" class="w-full p-2 border rounded">
+            <input type="number" id="amount" placeholder="Amount" class="w-full p-2 border rounded">
+            <input type="password" id="upiPin" placeholder="UPI PIN" class="w-full p-2 border rounded">
+            <button type="button" onclick="processSendMoney()" class="w-full bg-blue-500 text-white py-2 rounded">Send</button>
+        </form>
+    </div>
+
+    <!-- Request Money Modal -->
+    <div id="requestMoneyModal" class="modal bg-white rounded-lg p-6 w-96">
+        <h3 class="text-xl font-bold mb-4">Request Money</h3>
+        <form id="requestMoneyForm" class="space-y-4">
+            <select id="requestType" class="w-full p-2 border rounded">
+                <option value="upi">UPI ID</option>
+                <option value="mobile">Mobile Number</option>
+            </select>
+            <input type="text" id="requestRecipientId" placeholder="Recipient ID" class="w-full p-2 border rounded">
+            <input type="number" id="requestAmount" placeholder="Amount" class="w-full p-2 border rounded">
+            <button type="button" onclick="processRequestMoney()" class="w-full bg-green-500 text-white py-2 rounded">Request</button>
+        </form>
+    </div>
+
+    <!-- Check Balance Modal -->
+    <div id="checkBalanceModal" class="modal bg-white rounded-lg p-6 w-96">
+        <h3 class="text-xl font-bold mb-4">Check Balance</h3>
+        <div id="bankList" class="space-y-2">
+            <!-- Banks will be added dynamically -->
+        </div>
+    </div>
+
+    <!-- Transaction History Modal -->
+    <div id="historyModal" class="modal bg-white rounded-lg p-6 w-96">
+        <h3 class="text-xl font-bold mb-4">Transaction History</h3>
+        <div id="transactionList" class="space-y-2">
+            <!-- Transactions will be added dynamically -->
         </div>
     </div>
 
     <script>
         // Simulated data
-        const mockData = {
-            banks: ['HDFC Bank', 'SBI', 'ICICI Bank'],
-            transactions: [
-                { type: 'sent', amount: 1000, to: 'user@upi', date: '2023-12-01', id: 'TXN001' },
-                { type: 'received', amount: 500, from: 'friend@upi', date: '2023-12-02', id: 'TXN002' }
-            ]
-        };
+        let currentUser = null;
+        const users = [];
+        const transactions = [];
+        const banks = ['SBI', 'HDFC', 'ICICI', 'Axis'];
 
-        // Auth functions
+        // UI Functions
         function showLogin() {
-            document.getElementById('loginForm').classList.remove('hidden');
             document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
         }
 
         function showRegister() {
@@ -118,163 +190,152 @@
             document.getElementById('registerForm').classList.remove('hidden');
         }
 
-        // Dashboard functions
         function toggleProfile() {
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('hidden');
+            document.getElementById('profileMenu').classList.toggle('hidden');
         }
 
-        function showModal(content) {
-            document.getElementById('modalContainer').classList.remove('hidden');
-            document.getElementById('modalContent').innerHTML = content;
+        function showModal(modalId) {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById(modalId).style.display = 'block';
         }
 
-        function hideModal() {
-            document.getElementById('modalContainer').classList.add('hidden');
+        function hideModal(modalId) {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById(modalId).style.display = 'none';
         }
 
+        // Authentication Functions
+        function handleRegister() {
+            const name = document.getElementById('regName').value;
+            const phone = document.getElementById('regPhone').value;
+            const account = document.getElementById('regAccount').value;
+            const ifsc = document.getElementById('regIFSC').value;
+            const pin = document.getElementById('regPin').value;
+
+            if (!name || !phone || !account || !ifsc || !pin) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            users.push({ name, phone, account, ifsc, pin, balance: 10000 });
+            alert('Registration successful! Please login.');
+            showLogin();
+        }
+
+        function handleLogin() {
+            const phone = document.getElementById('loginPhone').value;
+            const account = document.getElementById('loginAccount').value;
+            const ifsc = document.getElementById('loginIFSC').value;
+
+            if (!phone || !account || !ifsc) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const user = users.find(u => u.phone === phone && u.account === account);
+            if (user) {
+                currentUser = user;
+                document.getElementById('authContainer').classList.add('hidden');
+                document.getElementById('dashboardContainer').classList.remove('hidden');
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('profileName').textContent = `Welcome, ${user.name}`;
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('dashboardContainer').classList.add('hidden');
+            document.getElementById('authContainer').classList.remove('hidden');
+            document.getElementById('profileMenu').classList.add('hidden');
+        }
+
+        // Transaction Functions
         function showSendMoney() {
-            const content = `
-                <div class="space-y-4">
-                    <h2 class="text-xl font-bold mb-4">Send Money</h2>
-                    <div>
-                        <select class="w-full p-3 border rounded-lg">
-                            <option value="upi">UPI ID</option>
-                            <option value="mobile">Mobile Number</option>
-                            <option value="account">IFSC & Account Number</option>
-                        </select>
-                    </div>
-                    <input type="text" placeholder="Enter recipient details" class="w-full p-3 border rounded-lg">
-                    <input type="number" placeholder="Enter amount" class="w-full p-3 border rounded-lg">
-                    <input type="password" placeholder="Enter UPI PIN" class="w-full p-3 border rounded-lg">
-                    <button onclick="processPayment()" class="w-full py-3 bg-blue-600 text-white rounded-lg">Send</button>
-                    <button onclick="hideModal()" class="w-full py-3 bg-gray-200 rounded-lg mt-2">Cancel</button>
-                </div>
-            `;
-            showModal(content);
+            showModal('sendMoneyModal');
         }
 
         function showRequestMoney() {
-            const content = `
-                <div class="space-y-4">
-                    <h2 class="text-xl font-bold mb-4">Request Money</h2>
-                    <div>
-                        <select class="w-full p-3 border rounded-lg">
-                            <option value="upi">UPI ID</option>
-                            <option value="mobile">Phone Number</option>
-                        </select>
-                    </div>
-                    <input type="text" placeholder="Enter details" class="w-full p-3 border rounded-lg">
-                    <input type="number" placeholder="Enter amount" class="w-full p-3 border rounded-lg">
-                    <button onclick="processRequest()" class="w-full py-3 bg-blue-600 text-white rounded-lg">Request</button>
-                    <button onclick="hideModal()" class="w-full py-3 bg-gray-200 rounded-lg mt-2">Cancel</button>
-                </div>
-            `;
-            showModal(content);
+            showModal('requestMoneyModal');
         }
 
-        function showCheckBalance(source) {
-            const content = `
-                <div class="space-y-4">
-                    <h2 class="text-xl font-bold mb-4">Select Bank</h2>
-                    <div class="space-y-2">
-                        ${mockData.banks.map(bank => `
-                            <button onclick="checkBalance('${bank}')" class="w-full p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg">
-                                ${bank}
-                            </button>
-                        `).join('')}
-                    </div>
-                    <button onclick="hideModal()" class="w-full py-3 bg-gray-200 rounded-lg mt-2">Cancel</button>
-                </div>
-            `;
-            showModal(content);
+        function showCheckBalance() {
+            const bankList = document.getElementById('bankList');
+            bankList.innerHTML = banks.map(bank => `
+                <button onclick="checkBankBalance('${bank}')" class="w-full text-left p-2 hover:bg-gray-100 rounded">
+                    ${bank} Bank
+                </button>
+            `).join('');
+            showModal('checkBalanceModal');
         }
 
         function showHistory() {
-            const content = `
-                <div class="space-y-4">
-                    <h2 class="text-xl font-bold mb-4">Transaction History</h2>
-                    <div class="space-y-2">
-                        ${mockData.transactions.map(tx => `
-                            <div class="p-3 bg-gray-50 rounded-lg">
-                                <div class="flex justify-between">
-                                    <span class="font-semibold">${tx.type === 'sent' ? 'Sent to: ' + tx.to : 'Received from: ' + tx.from}</span>
-                                    <span class="${tx.type === 'sent' ? 'text-red-600' : 'text-green-600'}">
-                                        ${tx.type === 'sent' ? '-' : '+'}₹${tx.amount}
-                                    </span>
-                                </div>
-                                <div class="text-sm text-gray-500">${tx.date} | ID: ${tx.id}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <button onclick="hideModal()" class="w-full py-3 bg-gray-200 rounded-lg mt-2">Close</button>
+            const transactionList = document.getElementById('transactionList');
+            transactionList.innerHTML = transactions.map(t => `
+                <div class="border-b p-2">
+                    <p class="font-bold">${t.type}</p>
+                    <p>Amount: ₹${t.amount}</p>
+                    <p>Date: ${t.date}</p>
                 </div>
-            `;
-            showModal(content);
+            `).join('');
+            showModal('historyModal');
         }
 
-        // Init
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            document.getElementById('authContainer').classList.add('hidden');
-            document.getElementById('dashboardContainer').classList.remove('hidden');
+        function processSendMoney() {
+            const amount = document.getElementById('amount').value;
+            const pin = document.getElementById('upiPin').value;
+            const recipientId = document.getElementById('recipientId').value;
+
+            if (!amount || !pin || !recipientId) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            if (pin !== currentUser.pin) {
+                alert('Invalid PIN');
+                return;
+            }
+
+            transactions.push({
+                type: 'Send Money',
+                amount: amount,
+                date: new Date().toLocaleDateString(),
+                recipientId: recipientId
+            });
+
+            alert('Transaction Successful!\nRecipient ID: ' + recipientId + '\nTransaction ID: ' + Math.random().toString(36).substr(2, 9));
+            hideModal('sendMoneyModal');
+        }
+
+        function processRequestMoney() {
+            const amount = document.getElementById('requestAmount').value;
+            const recipientId = document.getElementById('requestRecipientId').value;
+
+            if (!amount || !recipientId) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            alert('Money request sent successfully!');
+            hideModal('requestMoneyModal');
+        }
+
+        function checkBankBalance(bank) {
+            const pin = prompt('Enter your UPI PIN to check balance');
+            if (pin === currentUser.pin) {
+                alert(`Your balance in ${bank} Bank is: ₹${currentUser.balance}`);
+            } else {
+                alert('Invalid PIN');
+            }
+            hideModal('checkBalanceModal');
+        }
+
+        // Event Listeners
+        document.getElementById('overlay').addEventListener('click', () => {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => hideModal(modal.id));
         });
-
-        document.getElementById('registerForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            document.getElementById('authContainer').classList.add('hidden');
-            document.getElementById('dashboardContainer').classList.remove('hidden');
-        });
-
-        function logout() {
-            document.getElementById('authContainer').classList.remove('hidden');
-            document.getElementById('dashboardContainer').classList.add('hidden');
-            document.getElementById('profileDropdown').classList.add('hidden');
-        }
-
-        // Payment processing functions
-        function processPayment() {
-            showModal(`
-                <div class="text-center space-y-4">
-                    <i class="bi bi-check-circle-fill text-5xl text-green-600"></i>
-                    <h2 class="text-xl font-bold">Payment Successful!</h2>
-                    <p class="text-gray-600">Transaction ID: TXN${Math.random().toString(36).substr(2, 9)}</p>
-                    <button onclick="hideModal()" class="w-full py-3 bg-blue-600 text-white rounded-lg">Done</button>
-                </div>
-            `);
-        }
-
-        function processRequest() {
-            showModal(`
-                <div class="text-center space-y-4">
-                    <i class="bi bi-check-circle-fill text-5xl text-green-600"></i>
-                    <h2 class="text-xl font-bold">Request Sent Successfully!</h2>
-                    <button onclick="hideModal()" class="w-full py-3 bg-blue-600 text-white rounded-lg">Done</button>
-                </div>
-            `);
-        }
-
-        function checkBalance(bank) {
-            showModal(`
-                <div class="space-y-4">
-                    <h2 class="text-xl font-bold mb-4">Enter PIN for ${bank}</h2>
-                    <input type="password" placeholder="Enter UPI PIN" class="w-full p-3 border rounded-lg">
-                    <button onclick="showBalanceAmount('${bank}')" class="w-full py-3 bg-blue-600 text-white rounded-lg">Submit</button>
-                    <button onclick="hideModal()" class="w-full py-3 bg-gray-200 rounded-lg">Cancel</button>
-                </div>
-            `);
-        }
-
-        function showBalanceAmount(bank) {
-            showModal(`
-                <div class="text-center space-y-4">
-                    <h2 class="text-xl font-bold">Current Balance</h2>
-                    <p class="text-3xl font-bold text-green-600">₹${Math.floor(Math.random() * 100000)}</p>
-                    <p class="text-gray-600">${bank}</p>
-                    <button onclick="hideModal()" class="w-full py-3 bg-blue-600 text-white rounded-lg">Close</button>
-                </div>
-            `);
-        }
     </script>
 </body>
 </html>
